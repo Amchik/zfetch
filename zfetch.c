@@ -75,47 +75,41 @@ void prin_info(info* instance) {
     printf("%s%s\e[0m%s%s\n", bld, *key, separator, *(key + 1));
   }
 }
-void prin_logo(logo *instance) {
-  //printf("%s\n", instance->content);
-  //return;
-  char* point = instance->content - 1;
-  for (int i = 0; i < instance->height; i++) {
-    // wait_for_escape_end
-    char wfee = 0;
-    for (int j = 0; j < instance->width;) {
-      char* c = ++point;
-      //printf("%c=>", *c);
-      //printf("%d\n", (c - instance->content));
-      //j++;
-      //continue;
-      if (*c == '\n') {
-        if (j == 0) continue;
-        if (wfee) {
-          wfee = 0;
-          printf("m");
-        }
-        if (!instance->transparent &&
-            j - 1 != instance->width) {
-          for (; j < instance->width; j++) {
-            printf(" ");
-          } // todo: optimize
-        }
-        break;
+void _prin_lgo_ln(logo* lgo, size_t *pos) {
+  char wfee = 0;
+  for (int j = 0; j < lgo->width;) {
+    char* c = (char*)((size_t)lgo->content + (*pos)++ - 1);
+    if (*c == '\n') {
+      if (j == 0) continue;
+      if (wfee) {
+        wfee = 0;
+        printf("m");
       }
-      if (*c == 0) continue;
-      printf("%c", *c);
-      //printf("%d\n", c - instance->content);
-      if (*c == '\e') wfee = 1;
-      if ( *c == 0             ||
-          (*c == 'm' && wfee ) ||
-           *c == '\e'          ||
-           wfee                ){
-        if (wfee && *c == 'm') wfee = 0;
-        continue;
+      if (!lgo->transparent &&
+          j - 1 != lgo->width) {
+        for (; j < lgo->width; j++) {
+          printf(" ");
+        } // todo: optimize
       }
-      j++;
+      break;
     }
-    //printf("--\\n--");
+    if (*c == 0) continue;
+    printf("%c", *c);
+    if (*c == '\e') wfee = 1;
+    if ( *c == 0             ||
+        (*c == 'm' && wfee ) ||
+         *c == '\e'          ||
+         wfee                ){
+      if (wfee && *c == 'm') wfee = 0;
+      continue;
+    }
+    j++;
+  }
+}
+void prin_logo(logo *instance) {
+  size_t pos = 0;
+  for (int i = 0; i < instance->height; i++) {
+    _prin_lgo_ln(instance, &pos);
     printf("\n");
   }
 }
@@ -136,46 +130,13 @@ void _prin_crd_l(card* crd) {
   int width = lgo->width;
   int height = _max(lgo->height, inf->lines + 2);
 
-  char* lgoc = lgo->content - 1;
+  size_t lgo_pos = 0;
   for (int i = 0; i < height; i++) {
     if (i >= lgo->height)
       for(int j = 0; j < width; j++)
         printf(" ");
     else {
-      char wfee = 0;
-      for (int j = 0; j < width;) {
-        char* c = ++lgoc;
-        //printf("%c=>", *c);
-        //printf("%d\n", (c - instance->content));
-        //j++;
-        //continue;
-        if (*c == '\n') {
-          if (j == 0) continue;
-          if (wfee) {
-            wfee = 0;
-            printf("m");
-          }
-          if (!lgo->transparent &&
-              j - 1 != width) {
-            for (; j < width; j++) {
-              printf(" ");
-            } // todo: optimize
-          }
-          break;
-        }
-        if (*c == 0) continue;
-        printf("%c", *c);
-        //printf("%d\n", c - instance->content);
-        if (*c == '\e') wfee = 1;
-        if ( *c == 0             ||
-            (*c == 'm' && wfee ) ||
-             *c == '\e'          ||
-             wfee                ){
-          if (wfee && *c == 'm') wfee = 0;
-          continue;
-        }
-        j++;
-      }
+      _prin_lgo_ln(lgo, &lgo_pos);
     }
     printf("\e[0m ");
     if (i == 0) printf("| \e[1m%s\e[0m", crd->head);
