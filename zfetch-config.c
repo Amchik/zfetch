@@ -60,8 +60,9 @@ zfconfig* parse_config() {
 //  return(original);
 //}
 char* strcappend(char* original, char new) {
-  size_t size = strlen(original) + 1;
+  size_t size = strlen(original) + 2;
   char* tmp = malloc(size);
+  tmp[0] = '\0';
   sprintf(tmp, "%s%c", original, new);
   return(tmp);
 }
