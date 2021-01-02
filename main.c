@@ -32,9 +32,9 @@ int main(int argc, char* argv[]) {
   char* logofile = malloc(strlen(userhome) + strlen(config_dir) + strlen(logo_file_name));
   sprintf(logofile, "%s%s%s", userhome, config_dir, logo_file_name);
 
-//  signal(SIGSEGV, _segv);
-//  signal(SIGABRT, _segv);
-//  signal(SIGIOT, _segv);
+  signal(SIGSEGV, _segv);
+  signal(SIGABRT, _segv);
+  signal(SIGIOT, _segv);
 
   if (argc > 1 && strcmp(argv[1], "--init-base-dirs") == 0) {
     printf(" \e[0;34m[i]\e[0m Creating base directories...\n");
@@ -52,7 +52,11 @@ int main(int argc, char* argv[]) {
   zfconfig* cfg = parse_config();
   char* title;
   if (strcmp(zfconfig_get_key(cfg, "info.autotitle"), "yes") == 0) {
-    title = "zfetch 1";
+    char* username = get_user_name();
+    char* hostname = get_host_name();
+    title = malloc(strlen(username) + strlen(hostname) + 2);
+    title[0] = '\0';
+    sprintf(title, "%s@%s", username, hostname);
   } else {
     title = zfconfig_get_key(cfg, "info.title");
     if (!title) title = "<failed to parse>";

@@ -207,7 +207,7 @@ char* zfconfig_get_key(const zfconfig* config, const char* key) {
 }
 
 char* get_user_name() {
-  return getenv("USERNAME");
+  return getenv("USER");
 }
 char* get_host_name() {
   return getenv("HOSTNAME");
