@@ -32,9 +32,21 @@ zfconfig* parse_config() {
     char* val;
 
     key = strtok(ln, "=");
-    val = strtok(0, "=");
-    if (!key || !val) continue;
+    char* tmp = strtok(0, "=");
+    if (!key || !tmp) continue;
+    val = malloc(strlen(tmp));
+    strcpy(val, tmp);
+    tmp = strtok(0, "=");
+    while (tmp) {
+      char* tv = malloc(strlen(val) + strlen(tmp) + 2);
+      tv[0] = '\0';
+      sprintf(tv, "%s=%s", val, tmp);
+      free(val);
+      val = tv;
+      tmp = strtok(0, "=");
+    }
 
+    // audit: is it good idea?
     val[strlen(val) - 1] = '\0';
 
     if (cfg->values == 0) {
