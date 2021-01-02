@@ -58,7 +58,11 @@ int main(int argc, char* argv[]) {
     if (!title) title = "<failed to parse>";
   }
 
-  logo* lgo = mk_logo(7, 13, 0);
+  int width = 0, height = 0;
+  width = atoi(zfconfig_get_key(cfg, "logo.geometry.width"));
+  height = atoi(zfconfig_get_key(cfg, "logo.geometry.height"));
+
+  logo* lgo = mk_logo(height, width, 0);
   lgo->content = read_file(logofile);
 
   info_file* _inf = parse_info_file();
