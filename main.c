@@ -32,9 +32,9 @@ int main(int argc, char* argv[]) {
   char* logofile = malloc(strlen(userhome) + strlen(config_dir) + strlen(logo_file_name));
   sprintf(logofile, "%s%s%s", userhome, config_dir, logo_file_name);
 
-  signal(SIGSEGV, _segv);
-  signal(SIGABRT, _segv);
-  signal(SIGIOT, _segv);
+  //signal(SIGSEGV, _segv);
+  //signal(SIGABRT, _segv);
+  //signal(SIGIOT, _segv);
 
   if (argc > 1 && strcmp(argv[1], "--init-base-dirs") == 0) {
     printf(" \e[0;34m[i]\e[0m Creating base directories...\n");

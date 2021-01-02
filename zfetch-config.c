@@ -60,10 +60,14 @@ zfconfig* parse_config() {
 //  return(original);
 //}
 char* strcappend(char* original, char new) {
-  size_t size = strlen(original) + 2;
+  size_t size;
+  if (original) size = strlen(original) + 2;
+  else size = 2;
   char* tmp = malloc(size);
   tmp[0] = '\0';
+  if (!original) original = "";
   sprintf(tmp, "%s%c", original, new);
+  free(original);
   return(tmp);
 }
 info_file* parse_info_file() {
@@ -115,7 +119,7 @@ info_file* parse_info_file() {
       }
       if (escape) {
         escape = false;
-        // todo: escape
+        if (e == 'e') e = '\e';
         key = strcappend(key, e);
         continue;
       }
@@ -143,11 +147,16 @@ info_file* parse_info_file() {
     done = false;
     pointer++;
 
+    bool command = false;
     // getting value
     for(; pointer < strlen(ln); pointer++) {
       char e = *(ln + pointer);
       if (!in_str) {
         switch(e) {
+          case '{':
+            command = true;
+            in_str = true;
+            break;
           case '"':
             in_str = true;
             break;
@@ -163,7 +172,7 @@ info_file* parse_info_file() {
       }
       if (escape) {
         escape = false;
-        // todo: escape
+        if (e == 'e') e = '\e';
         val = strcappend(val, e);
         continue;
       }
@@ -171,11 +180,14 @@ info_file* parse_info_file() {
         case '\\':
           escape = true;
           continue;
-        case '"':
-          in_str = false;
-          done = true;
-          break;
         default:
+          if (
+              (!command && (e == '"')) ||
+              ( command && (e == '}'))) {
+            in_str = false;
+            done = true;
+            break;
+          }
           val = strcappend(val, e);
           break;
       }
@@ -187,11 +199,28 @@ info_file* parse_info_file() {
       fl->content[(fl->lines - 1) * 2 + 1] = "<invalid>";
       continue;
     }
+    if (command) {
+      FILE* out = popen(val, "r");
+      if (!out) {
+        val = "<failed to execute command>";
+      } else {
+        char* vln;
+        size_t vn = 0;
+        getline(&vln, &vn, out);
+        free(val);
+        val = vln;
+        size_t laste = strlen(val) - 1;
+        if (val[laste] == '\n') val[laste] = '\0';
+        fclose(out);
+      }
+    }
     fl->content = realloc(fl->content, ++fl->lines * 2 * sizeof(char*));
     fl->content[(fl->lines - 1) * 2] = malloc(strlen(key));
     fl->content[(fl->lines - 1) * 2 + 1] = malloc(strlen(val));
     strcpy(fl->content[(fl->lines - 1) * 2], key);
     strcpy(fl->content[(fl->lines - 1) * 2 + 1], val);
+    free(key);
+    free(val);
   }
 
   return(fl);
