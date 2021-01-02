@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "include/zfetch.h"
 
@@ -119,6 +120,21 @@ int _max(int a, int b) {
   return(b);
 }
 
+int strdlen(char* string) {
+  int dlen = 0;
+  int rlen = strlen(string);
+  bool escape = false;
+  for (int i = 0; i < rlen; i++) {
+    if (string[i] == '\e') {
+      escape = true;
+    } else if (escape && string[i] == 'm') {
+      escape = false;
+    } else if (!escape) {
+      dlen++;
+    }
+  }
+  return(dlen);
+}
 void _prin_crd_l(card* crd) {
   logo* lgo = crd->lgo;
   info* inf = crd->inf;
@@ -142,7 +158,8 @@ void _prin_crd_l(card* crd) {
     if (i == 0) printf("| \e[1m%s\e[0m", crd->head);
     else if (i == 1) {
       printf("|");
-      for (int p = 1; p < strlen(crd->head) + 2; p++)
+      int dlen = strdlen(crd->head);
+      for (int p = 1; p < dlen + 2; p++)
         printf("-");
     }
     else if (i > 1 && (i - 2) < inf->lines) {

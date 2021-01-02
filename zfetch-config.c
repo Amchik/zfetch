@@ -12,6 +12,7 @@ char* _get_config_location() {
   char* confdir = malloc(strlen(userdir) + strlen(config_dir) + strlen(main_file_name));
   sprintf(confdir, "%s%s%s", userdir, config_dir, main_file_name);
   return confdir;
+
 }
 
 zfconfig* parse_config() {
@@ -50,7 +51,6 @@ zfconfig* parse_config() {
     strcpy(cfg->values[(cfg->keys - 1) * 2], key);
     strcpy(cfg->values[(cfg->keys - 1) * 2 + 1], val);
   }
-  puts("");
   fclose(fp);
   return(cfg);
 }
