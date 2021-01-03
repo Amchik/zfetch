@@ -78,7 +78,15 @@ int main(int argc, char* argv[]) {
   if (inf->separator == 0) inf->separator = ": ";
   if (strcmp(zfconfig_get_key(cfg, "info.bold"), "yes") == 0) inf->bold = 1;
 
-  prin_card(crd);
+  clrscm clrs;
+  // todo: add value checks
+  clrs.primary = atoi(zfconfig_get_key(cfg, "clrscm.primary"));
+  clrs.secondary = atoi(zfconfig_get_key(cfg, "clrscm.secondary"));
+  clrs.header = atoi(zfconfig_get_key(cfg, "clrscm.header"));
+  clrs.border = atoi(zfconfig_get_key(cfg, "clrscm.border"));
+  clrs.separator = atoi(zfconfig_get_key(cfg, "clrscm.separator"));
+
+  prin_card(crd, &clrs);
   prin_clrs(2);
 
   destroy_logo(lgo);

@@ -293,6 +293,14 @@ void init_base_dirs() {
       "info.title=zfetch are awesome\n"
       "info.bold=yes\n"
       "info.separator=: \n"
+      "\n"
+      " Color scheme: color.primary - key,\n"
+      " color.secondary - value. ranges: 30-39, 90-99\n"
+      "clrscm.primary=34\n"
+      "clrscm.secondary=34\n"
+      "clrscm.header=32\n"
+      "clrscm.separator=35\n"
+      "clrscm.border=31\n"
       , f_mainfile);
   // yes, todo: serialization
   fclose(f_mainfile);

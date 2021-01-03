@@ -135,7 +135,7 @@ int strdlen(char* string) {
   }
   return(dlen);
 }
-void _prin_crd_l(card* crd) {
+void _prin_crd_l(card* crd, clrscm* clrs) {
   logo* lgo = crd->lgo;
   info* inf = crd->inf;
 
@@ -154,23 +154,24 @@ void _prin_crd_l(card* crd) {
     else {
       _prin_lgo_ln(lgo, &lgo_pos);
     }
-    printf("\e[0m ");
-    if (i == 0) printf("| \e[1m%s\e[0m", crd->head);
+    printf("\e[0;%dm ", clrs->border);
+    if (i == 0) printf("| \e[1;%dm%s\e[0m", clrs->header, crd->head);
     else if (i == 1) {
-      printf("|");
+      printf("\e[0;%dm|", clrs->border);
       int dlen = strdlen(crd->head);
       for (int p = 1; p < dlen + 2; p++)
         printf("-");
     }
     else if (i > 1 && (i - 2) < inf->lines) {
       char** key = inf->content + (i - 2) * 2;
-      printf("| %s%s\e[0m%s%s", bld, *key, inf->separator, *(key + 1));
+      printf("\e[0;%dm| \e[0;%dm%s%s\e[0;%dm%s\e[0;%dm%s\e[0m", 
+          clrs->border, clrs->primary, bld, *key, clrs->separator, inf->separator, clrs->secondary, *(key + 1));
     }
     printf("\n");
   }
 }
-void prin_card(card* crd) {
-  if (crd->lgo_pos) _prin_crd_l(crd);
+void prin_card(card* crd, clrscm* clrs) {
+  if (crd->lgo_pos) _prin_crd_l(crd, clrs);
   else puts("NI: sorry");
 }
 

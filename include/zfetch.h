@@ -23,6 +23,15 @@ struct _info {
 };
 typedef struct _info info;
 
+struct _clrscm {
+  char primary;
+  char secondary;
+  char separator;
+  char header;
+  char border;
+};
+typedef struct _clrscm clrscm;
+
 struct _card {
   info* inf;
   logo* lgo;
@@ -55,7 +64,7 @@ void info_append(info* instance, char* key, char* value);
 void prin_info(info* instance);
 void prin_logo(logo* instance);
 
-void prin_card(card* crd);
+void prin_card(card* crd, clrscm* clrs);
 
 // utils
 void prin_clrs(unsigned char rows);
