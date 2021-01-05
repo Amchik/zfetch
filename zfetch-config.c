@@ -15,8 +15,8 @@ char* _get_config_location() {
 
 }
 
-zfconfig* parse_config() {
-  FILE* fp = fopen(_get_config_location(), "r");
+zfconfig* parse_config(const char* confdir) {
+  FILE* fp = fopen(confdir, "r");
   if (fp == 0) return(0);
  
   zfconfig* cfg = (zfconfig*)malloc(sizeof(zfconfig));
@@ -82,13 +82,11 @@ char* strcappend(char* original, char new) {
   free(original);
   return(tmp);
 }
-info_file* parse_info_file() {
+info_file* parse_info_file(const char* _ifl) {
   info_file* fl = malloc(sizeof(info_file));
   fl->lines = 0;
   fl->content = 0;
 
-  char* _ifl = malloc(strlen(get_user_home()) + strlen(config_dir) + strlen(info_file_name));
-  sprintf(_ifl, "%s%s%s", get_user_home(), config_dir, info_file_name);
   FILE* ifl = fopen(_ifl, "r");
   
   char* ln;
@@ -216,17 +214,23 @@ info_file* parse_info_file() {
       if (!out) {
         val = "<failed to execute command>";
       } else {
-        char* vln;
+        char* vln = 0;
         size_t vn = 0;
         getline(&vln, &vn, out);
         free(val);
         val = vln;
         size_t laste = strlen(val) - 1;
-        if (val[laste] == '\n') val[laste] = '\0';
-        fclose(out);
+        if (val[laste] == '\n')
+          val[laste] = '\0';
+        // Uncomment this line for...
+        // free(): invalid pointer
+        // [1]    9331 IOT instruction (core dumped)  ./zfetch
+        // (???)
+        //pclose(out);
+        // just ignore popen(3)
       }
     }
-    fl->content = realloc(fl->content, ++fl->lines * 2 * sizeof(char*));
+    fl->content = realloc(fl->content, (++fl->lines + 1) * 2 * sizeof(char*));
     fl->content[(fl->lines - 1) * 2] = malloc(strlen(key));
     fl->content[(fl->lines - 1) * 2 + 1] = malloc(strlen(val));
     strcpy(fl->content[(fl->lines - 1) * 2], key);
@@ -259,6 +263,8 @@ char* get_user_home() {
 }
 
 void init_base_dirs() {
+  // oh, i read this code...
+  // audit: fix it, fix it all
   char* userdir = get_user_home();
   char* confdir = malloc(strlen(userdir) + strlen(config_dir));
   strcat(confdir, userdir);
@@ -305,7 +311,17 @@ void init_base_dirs() {
   // yes, todo: serialization
   fclose(f_mainfile);
 
-  // todo: dynamic info, fixme:
+  char* info_file = malloc(strlen(confdir) + strlen(info_file_name));
+  sprintf(info_file, "%s%s", confdir, info_file_name);
+  FILE* f_info = fopen(info_file, "w");
+  fputs(
+      "\"os\" {zfetch --os-release NAME}\n"
+      "# You can use ID for pretty\n"
+      "\"pkgs\" \"unknown\"\n"
+      "\"kernel\" {uname -r}\n"
+      "\"wm/de\" {echo $DESKTOP_SESSION}\n"
+      "\"term\" {ps -o comm= -p \"$(($(ps -o ppid= -p \"$(($(ps -o sid= -p \"$$\")))\")))\"}"
+      , f_info);
   
   free(confdir);
 }

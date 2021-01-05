@@ -25,8 +25,8 @@ struct _info_file {
 };
 typedef struct _info_file info_file;
 
-zfconfig* parse_config();
-info_file* parse_info_file();
+zfconfig* parse_config(const char* confdir);
+info_file* parse_info_file(const char* _ifl);
 
 char* zfconfig_get_key(const zfconfig* config, const char* key);
 

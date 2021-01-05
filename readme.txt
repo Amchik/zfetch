@@ -41,13 +41,38 @@ Go to directory with sources and write this commands:
 | # $PM install neofetch | sucks. Use neofetch
 +------------------------+ 
 
+### TOOLS ###
+For some configs you can use built-in arguments for zfetch:
+
+#### PARSING /ETC/OS-RELEASE ####
+If you pass --os-release argument program parse /etc/os-release and
+exits.
+Error codes:
+  0 - ok
+  1 - not found
+
+Usage:
+  +-----------------------------+
+  | $ zfetch --os-release [KEY] |
+  | VALUE                       |
+  +-----------------------------+
+
+Example in info:
++-------------------------------+
+| "os" {zfetch --os-release ID} |
++-------------------------------+
+
+TIP: use
+  $ less /etc/os-release
+  for view all keys.
+
 ### CONFIGURATION ###
 Init base files with --init-base-dirs argument:
 +-----------------------------------+
 | $ zfetch --init-base-dirs         |
 |  [i] Creating base directories... |
 +-----------------------------------+
-...and this action not creates info file.
+NOTE: it overwrites logo, info and zfconfig.
 
 #### INFO ####
 Info file located in ~/.zfetch/info
@@ -125,4 +150,4 @@ More information you can read in todo.txt.
 
 ---
 Amchik <am4ik1337@gmail.com>, chk[rg]
-Sun Jan  3 11:06:54 PM UTC 2021 [date --utc]
+Tue Jan  5 08:14:22 PM UTC 2021 [date --utc]

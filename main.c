@@ -27,9 +27,37 @@ char* read_file(const char* filename) {
   return(string);
 }
 
+char* get_ifl_val(const char* key) {
+  info_file* ifl = parse_info_file("/etc/os-release"); // um...
+  for (int i = 0; i < ifl->lines * 2; i += 2) {
+    if (strcmp(ifl->content[i], key) == 0) {
+      return(ifl->content[i + 1]);
+    }
+  }
+  return(0);
+}
+
 int main(int argc, char* argv[]) {
+  if (argc > 1) {
+    // todo: 3.3
+    for (int i = 1; i < argc; ++i) {
+      if (strcmp("--os-release", argv[i]) == 0 && ++i < argc) {
+        // parse /etc/os-release w/ info. um...
+        zfconfig* osr = parse_config("/etc/os-release"); // ...
+        char* val = zfconfig_get_key(osr, argv[i]);
+        if (!val) return(1);
+        val[strlen(val) - 1] = 0;
+        val++;
+        printf("%s\n", val);
+        return(0);
+      }
+    }
+  }
+
   char* userhome = get_user_home();
   char* logofile = malloc(strlen(userhome) + strlen(config_dir) + strlen(logo_file_name));
+  char* confdir = malloc(strlen(userhome) + strlen(config_dir) + strlen(main_file_name));
+  sprintf(confdir, "%s%s%s", userhome, config_dir, main_file_name);
   sprintf(logofile, "%s%s%s", userhome, config_dir, logo_file_name);
 
   //signal(SIGSEGV, _segv);
@@ -49,7 +77,7 @@ int main(int argc, char* argv[]) {
     return(1);
   }
   
-  zfconfig* cfg = parse_config();
+  zfconfig* cfg = parse_config(confdir);
   char* title;
   if (strcmp(zfconfig_get_key(cfg, "info.autotitle"), "yes") == 0) {
     char* username = get_user_name();
@@ -69,7 +97,9 @@ int main(int argc, char* argv[]) {
   logo* lgo = mk_logo(height, width, 0);
   lgo->content = read_file(logofile);
 
-  info_file* _inf = parse_info_file();
+  char* _ifl = malloc(strlen(get_user_home()) + strlen(config_dir) + strlen(info_file_name));
+  sprintf(_ifl, "%s%s%s", get_user_home(), config_dir, info_file_name);
+  info_file* _inf = parse_info_file(_ifl);
   info* inf = mk_info(_inf->lines, 0, zfconfig_get_key(cfg, "info.separator"));
   inf->content = _inf->content; 
 
