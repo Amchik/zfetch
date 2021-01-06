@@ -336,13 +336,17 @@ bool has_base_dirs() {
   char* logofile = malloc(strlen(confdir) + strlen(logo_file_name));
   strcat(logofile, confdir);
   strcat(logofile, logo_file_name);
-  
+  char* infofile = malloc(strlen(confdir) + strlen(info_file_name));
+  strcat(infofile, confdir);
+  strcat(infofile, info_file_name);
+
   bool ex1 = access(mainfile, F_OK) != -1;
   bool ex2 = access(logofile, F_OK) != -1;
-  // yes, todo: dynamic info, fixme:
+  bool ex3 = access(infofile, F_OK) != -1;
 
   free(logofile);
   free(mainfile);
+  free(infofile);
   free(confdir);
-  return(ex1 && ex2);
+  return(ex1 && ex2 && ex3);
 }
