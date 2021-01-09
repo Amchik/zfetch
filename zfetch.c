@@ -1,14 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "include/zfetch.h"
 
-logo* mk_logo(int height, int width, unsigned char transparent) {
-  if (transparent != 0 && transparent != 1) {
-    return(0);
-  }
+logo* mk_logo(int height, int width, bool transparent) {
   logo* i = (logo*)malloc(sizeof(logo));
   i->height = height;
   i->width = width;
@@ -17,7 +13,7 @@ logo* mk_logo(int height, int width, unsigned char transparent) {
 
   return i;
 }
-info* mk_info(int lines, unsigned char bold, char* separator) {
+info* mk_info(int lines, bool bold, char* separator) {
   info* i = (info*)malloc(sizeof(info));
   i->lines = lines;
   i->bold = bold;
@@ -26,8 +22,7 @@ info* mk_info(int lines, unsigned char bold, char* separator) {
 
   return i;
 }
-card* mk_card(info* inf, logo* lgo, char* head, unsigned char lgo_pos) {
-  if (lgo_pos != 0 && lgo_pos != 1) return(0);
+card* mk_card(info* inf, logo* lgo, char* head, bool lgo_pos) {
   card* crd = (card*)malloc(sizeof(card));
 
   crd->inf = inf;
@@ -50,9 +45,7 @@ void destroy_card(card* instance) {
   free(instance);
 }
 
-void info_append(info* instance, char* key, char* value) {
-  // my code fucking sucks:
-  //size_t objsize = strlen(key) + strlen(value);
+void info_append(info* instance, const char* key, const char* value) {
   size_t objsize = 2 * sizeof(char*);
   if (instance->content == 0) {
     instance->content = (char**) malloc(objsize);
@@ -61,11 +54,13 @@ void info_append(info* instance, char* key, char* value) {
   }
   instance->lines++;
 
-  instance->content[(instance->lines - 1) * 2] = key;
-  instance->content[(instance->lines - 1) * 2 + 1] = value;
+  instance->content[(instance->lines - 1) * 2] = malloc(strlen(key) + 1);
+  strcpy(instance->content[(instance->lines - 1) * 2], key);
+  instance->content[(instance->lines - 1) * 2 + 1] = malloc(strlen(value) + 1);
+  strcpy(instance->content[(instance->lines - 1) * 2 + 1], value);
 }
 
-void prin_info(info* instance) {
+void prin_info(const info* instance) {
   char* separator = instance->separator;
   char* bld;
   if (instance->bold == 0) bld = "";
@@ -76,7 +71,7 @@ void prin_info(info* instance) {
     printf("%s%s\e[0m%s%s\n", bld, *key, separator, *(key + 1));
   }
 }
-void _prin_lgo_ln(logo* lgo, size_t *pos) {
+void _prin_lgo_ln(const logo* lgo, size_t *pos) {
   char wfee = 0;
   for (int j = 0; j < lgo->width;) {
     char* c = (char*)((size_t)lgo->content + (*pos)++ - 1);
@@ -90,7 +85,7 @@ void _prin_lgo_ln(logo* lgo, size_t *pos) {
           j - 1 != lgo->width) {
         for (; j < lgo->width; j++) {
           printf(" ");
-        } // todo: optimize
+        }
       }
       break;
     }
@@ -107,7 +102,7 @@ void _prin_lgo_ln(logo* lgo, size_t *pos) {
     j++;
   }
 }
-void prin_logo(logo *instance) {
+void prin_logo(const logo *instance) {
   size_t pos = 0;
   for (int i = 0; i < instance->height; i++) {
     _prin_lgo_ln(instance, &pos);
@@ -115,12 +110,10 @@ void prin_logo(logo *instance) {
   }
 }
 
-int _max(int a, int b) {
-  if (a > b) return(a);
-  return(b);
-}
-
-int strdlen(char* string) {
+// returns display length of string
+// example:
+//  strdlen("123\e[0;33mhello") -> 7
+int strdlen(const char* string) {
   int dlen = 0;
   int rlen = strlen(string);
   bool escape = false;
@@ -135,7 +128,7 @@ int strdlen(char* string) {
   }
   return(dlen);
 }
-void _prin_crd_l(card* crd, clrscm* clrs) {
+void _prin_crd_l(const card* crd, const clrscm* clrs) {
   logo* lgo = crd->lgo;
   info* inf = crd->inf;
 
@@ -144,7 +137,11 @@ void _prin_crd_l(card* crd, clrscm* clrs) {
   else bld = "";
 
   int width = lgo->width;
-  int height = _max(lgo->height, inf->lines + 2);
+  int height;
+  if (lgo->height > (inf->lines + 2))
+    height = lgo->height;
+  else
+    height = inf->lines + 2;
 
   size_t lgo_pos = 0;
   for (int i = 0; i < height; i++) {
@@ -170,7 +167,7 @@ void _prin_crd_l(card* crd, clrscm* clrs) {
     printf("\n");
   }
 }
-void prin_card(card* crd, clrscm* clrs) {
+void prin_card(const card* crd, const clrscm* clrs) {
   if (crd->lgo_pos) _prin_crd_l(crd, clrs);
   else puts("NI: sorry");
 }

@@ -3,14 +3,6 @@
 
 #include <stdbool.h>
 
-static char* config_dir = "/.zfetch/"; // ~/.zfetch/
-static char* default_logo = "(B[m[30m      ___(B[m\n(B[m[30m     ((B[m[37m.. (B[m[30m\\(B[m\n(B[m[30m     ((B[m[33m<> (B[m[30m|(B[m\n(B[m[30m    /(B[m[37m/  \\ (B[m[30m\\(B[m\n(B[m[30m   ( (B[m[37m|  | (B[m[30m/|(B[m\n(B[m[33m  _(B[m[30m/\\ (B[m[37m__)(B[m[30m/(B[m[33m_(B[m[30m)(B[m\n(B[m[33m  \\/(B[m[30m-____(B[m[33m\\/(B[m\n\nThanks ufetch for this art. (ufetch-linux)\n";
-static int default_logo_geometry[2] = {7, 13};
-
-static char* main_file_name = "zfconfig";
-static char* logo_file_name = "logo";
-static char* info_file_name = "info";
-
 struct _zfconfig {
   int keys;
 
@@ -35,7 +27,11 @@ char* get_host_name();
 
 char* get_user_home();
 
-void init_base_dirs();
+bool init_zfconfig(const char* _out);
+bool init_info(const char* _out);
+bool init_logo(const char* _out);
+
+unsigned char init_base_dirs();
 bool has_base_dirs();
 
 #endif

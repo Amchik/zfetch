@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "include/zfetch-config.h"
+#include "include/zfetch-vars.h"
 
 char* _get_config_location() {
   char* userdir = get_user_home();
@@ -262,35 +263,38 @@ char* get_user_home() {
   return getenv("HOME");
 }
 
-void init_base_dirs() {
-  // oh, i read this code...
-  // audit: fix it, fix it all
+char* _getconfdir() {
   char* userdir = get_user_home();
-  char* confdir = malloc(strlen(userdir) + strlen(config_dir));
+  char* confdir = malloc(strlen(userdir) + strlen(config_dir) + 1);
+  *confdir = '\0';
   strcat(confdir, userdir);
   strcat(confdir, config_dir);
-  mkdir(confdir, 0755);
+  return(confdir);
+}
 
-  char* logofile = malloc(strlen(confdir) + strlen(logo_file_name));
-  strcat(logofile, confdir);
-  strcat(logofile, logo_file_name);
-  
-  FILE* f_logofile = fopen(logofile, "w");
-  fputs(default_logo, f_logofile);
-  fclose(f_logofile);
-  
-  char* mainfile;
-  sprintf(mainfile, "%s%s", confdir, main_file_name);
+bool init_zfconfig(const char* _out) {
+  bool need_clean = false;
+  char* out = (char*)_out;
+  if (!out) {
+    char* confdir = _getconfdir();
+    out = malloc(strlen(confdir) + strlen(main_file_name) + 1);
+    *out = '\0';
+    strcat(out, confdir);
+    strcat(out, main_file_name);
 
-  FILE* f_mainfile = fopen(mainfile, "w");
+    free(confdir);
+    need_clean = true;
+  }
+  FILE* f_mainfile = fopen(out, "w");
+  if (!f_mainfile) return(false);
   fputs(
       " If string doesn't contains equals symbol it ignores\n",
       f_mainfile);
   fprintf(f_mainfile,
       "logo.geometry.height=%d\n"
       "logo.geometry.width=%d\n",
-      default_logo_geometry[0],
-      default_logo_geometry[1]);
+      default_logo_height,
+      default_logo_width);
   fputs(
       "\n"
       " info.autotitle sets info.title to {username}@{hostname}\n"
@@ -308,12 +312,28 @@ void init_base_dirs() {
       "clrscm.separator=35\n"
       "clrscm.border=31\n"
       , f_mainfile);
-  // yes, todo: serialization
   fclose(f_mainfile);
+  if (need_clean) free(out);
 
-  char* info_file = malloc(strlen(confdir) + strlen(info_file_name));
-  sprintf(info_file, "%s%s", confdir, info_file_name);
-  FILE* f_info = fopen(info_file, "w");
+  return(true);
+}
+
+bool init_info(const char* _out) {
+  char* out = (char*)_out;
+  bool need_clean = false;
+  if (!out) {
+    char* confdir = _getconfdir();
+    out = malloc(strlen(confdir) + strlen(info_file_name) + 1);
+    *out = '\0';
+    strcat(out, confdir);
+    strcat(out, info_file_name);
+
+    free(confdir);
+    need_clean = true;
+  }
+
+  FILE* f_info = fopen(out, "w");
+  if (!f_info) return(false);
   fputs(
       "\"os\" {zfetch --os-release NAME}\n"
       "# You can use ID for pretty\n"
@@ -322,8 +342,45 @@ void init_base_dirs() {
       "\"wm/de\" {echo $DESKTOP_SESSION}\n"
       "\"term\" {ps -o comm= -p \"$(($(ps -o ppid= -p \"$(($(ps -o sid= -p \"$$\")))\")))\"}"
       , f_info);
+  fclose(f_info);
+  if (need_clean) free(out);
   
+  return(true);
+}
+
+bool init_logo(const char* _out) {
+  char* out = (char*)_out;
+  bool need_clean = false;
+  if (!out) {
+    char* confdir = _getconfdir();
+    out = malloc(strlen(confdir) + strlen(logo_file_name) + 1);
+    *out = '\0';
+    strcat(out, confdir);
+    strcat(out, logo_file_name);
+
+    free(confdir);
+    need_clean = true;
+  }
+  FILE* f_logofile = fopen(out, "w");
+  if (!f_logofile) return(false);
+  fputs(default_logo, f_logofile);
+  fclose(f_logofile);
+  if (need_clean) free(out);
+  
+  return(true);
+}
+
+unsigned char init_base_dirs() {
+  char* confdir = _getconfdir();
+  mkdir(confdir, 0755);
   free(confdir);
+
+  unsigned char result = 0;
+  if (init_zfconfig(0)) result += 1 << 1;
+  if (init_info(0))     result += 1 << 2;
+  if (init_logo(0))     result += 1 << 3;
+
+  return(result);
 }
 bool has_base_dirs() {
   char* userdir = get_user_home();

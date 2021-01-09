@@ -9,11 +9,12 @@ _/_/_/_/  _/_/_/    _/          _/_/_/  _/    _/
 Usage:             Expert mode:
 +----------------+  Init configs:
 | $ rm zfetch    |  +-----------------------------------+
-+----------------+  | $ zfetch --init-base-dirs         |
++----------------+  | $ zfetch --regenerate-all         |
  ...or:             |  [i] Creating base directories... |
- +--------------+   +-----------------------------------+
- | $ make clean |   Run:
- +--------------+   +--------------------------------------------+
+ +--------------+   |  [i] Done.                        |
+ | $ make clean |   +-----------------------------------+
+ +--------------+   Run:
+                    +--------------------------------------------+
                     | $ zfetch                                   |
                     | [1] 24223 segmentation fault (core dumped) |
                     +--------------------------------------------+
@@ -25,9 +26,9 @@ You need a gcc (or another cc) and make:
 | $ echo $?               | | $ uwu             |
 | 0                       | +-------------------+
 +-------------------------+
-I recommend to hide all  +----------------+
-warnings because...      | $ make clean   |
-                         | $ make | wc -l |
+                         +----------------+
+ I recommend to hide all | $ make clean   |
+ warnings because...     | $ make | wc -l |
                          | 77             |
                          +----------------+
 
@@ -67,12 +68,36 @@ TIP: use
   for view all keys.
 
 ### CONFIGURATION ###
-Init base files with --init-base-dirs argument:
-+-----------------------------------+
-| $ zfetch --init-base-dirs         |
-|  [i] Creating base directories... |
-+-----------------------------------+
-NOTE: it overwrites logo, info and zfconfig.
+For generate all files use --regenerate-all.
+
+Syntax:
+  --regenerate-<zfconfig|info|logo> [output]
+
+Error codes:
+  0 - ok
+  1 - fail ~wow~
+
+output is optional, if not provided uses default file
+location.
+
+Syntax:
+  --regenerate-all
+
+Error codes:
+  0 - ok
+  1 - failed to regenerate all files
+  2 - failed to regenerate some files
+
+Output with error code 2:
+  With error message zfetch provides tech code in hex.
+  First byte (from start) always zero.
+  * 0b1110 - all files generated.
+  * 0b1000 - generated only logo.
+  * 0b0100 - generated only info.
+  * 0b0010 - generated only zfconfig.
+  If generated 2/3 files zfetch returns AND, eg. 0b0110 - 
+  - generated info and zfconfig, failed to generate logo.
+  TIP: re-read book named "Информатика. 6 класс"
 
 #### INFO ####
 Info file located in ~/.zfetch/info
@@ -128,7 +153,7 @@ Fields:
     clrscm.separator:
     clrscm.border:
 
-Example autogenerates by --init-base-dirs.
+Example autogenerates by [see section CONFIGURATION] or --init-base-dirs.
 
 #### LOGO ####
 ASCII art. Located in ~/.zfetch/logo
@@ -150,4 +175,4 @@ More information you can read in todo.txt.
 
 ---
 Amchik <am4ik1337@gmail.com>, chk[rg]
-Tue Jan  5 08:14:22 PM UTC 2021 [date --utc]
+Sat Jan  9 01:54:57 AM UTC 2021 [date --utc]
