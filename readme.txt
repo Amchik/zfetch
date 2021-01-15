@@ -67,6 +67,20 @@ TIP: use
   $ less /etc/os-release
   for view all keys.
 
+#### GETTING TERMINAL NAME, SHELL ####
+Usage:
+  +-----------------+
+  | $ zfetch --term |
+  | xfce4-terminal  |
+  +-----------------+
+
+All options:
+  --term: return terminal name (ex.: xfce4-terminal)
+  --shell: return shell path/name (ex.: /usr/bin/zsh)
+  --shell-short: return only shell name (ex.: zsh)
+
+After returning name program exits.
+
 ### CONFIGURATION ###
 For generate all files use --regenerate-all.
 
