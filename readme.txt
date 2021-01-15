@@ -130,13 +130,13 @@ It supports VERY BASE escape char:
 
 ZFetch written in C, but speed equals neofetch.
 Example info:
-+---------------------------------------------------------------------------------+
-| "os"     "bedian"                                                               |
-| "pkgs"   {apt list --installed | wc -l}                                         |
-| "kernel" {uname -r}                                                             |
-| "wm/de"  {echo $DESKTOP_SESSION}                                                |
-| "term"   {ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))"} |
-+---------------------------------------------------------------------------------+
++-----------------------------------------+
+| "os"     "bedian"                       |
+| "pkgs"   {apt list --installed | wc -l} |
+| "kernel" {uname -r}                     |
+| "wm/de"  {echo $DESKTOP_SESSION}        |
+| "term"   {zfetch --term}                |
++-----------------------------------------+
 
 #### ZFCONFIG ####
 zfconfig - main configuration file. Located in
