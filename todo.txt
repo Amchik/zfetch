@@ -17,7 +17,8 @@ Files: zfetch-config.c (include/zfetch-config.h)
 Files: -
 NOTE: tools for info file, like
  "term" {zfetch --get-term} (prototype)
-1. [ ] Get terminal name
+1. [x] Get terminal name
+  -- implemented: --term
 2. [x] Parse /etc/os-release and print values
   1. [x] Parse "ID"
     -- implemented: --os-release ID
@@ -31,9 +32,11 @@ Files: include/*.h, *.c
   3. [ ] in main.c
     1. [ ] move info, warning, errors message printing into
       function
+  4. [ ] move some functions into *utils.h, 3.1.3.1
 2. [x] [include/zfetch-config.h] parser for /etc/os-release
   NOTE: maybe use parse_config()
 3. [ ] [main.c] add arguments parsing
+  NOTE: without if-else
 4. [x] [zfetch-config.h] separate file gens
   1. [x] logo
   2. [x] zfconfig
@@ -43,6 +46,7 @@ Files: include/*.h, *.c
   1. [ ] add free() for more pointers
   2. [ ] fix realloc next size
   3. [ ] fix [m|c]alloc size
+  4. [ ] use calloc for strings
 6. [ ] [zfetch.c] separate logo printing, info printing
   1. [ ] info
     1. [ ] get geometry
@@ -67,17 +71,20 @@ Files: zfetch-config.c (include/zfetch-config.h)
 2. [ ] [zfconfig] custom border symbols
 3. [ ] [zfconfig] more colors
   depend on: 3.1 if:
-    1. ( ) char -> unsigned char
-    2. ( ) use strings
-    3. ( ) hex in conf, struct rgb,
+    1. --- char -> unsigned char
+    2. --- use strings
+    3. (x) hex in conf, struct rgb,
       rgb to ESC
+  4. [ ] truecolor/256-color
+    1. [ ] 5.3.3
 
 ### 6. DOCUMENTATION ###
 Files: readme.txt
 1. [ ] man page
 2. [ ] built-in docs
   1. [ ] os-release
-  2. [ ] generating files
+  2. [x] generating files
+  3. [ ] term, shell
 
 ### 7. SERIALIZATION ###
 NOTE: priority: -0.1 (from base)
@@ -90,4 +97,4 @@ NOTE: priority: -0.1 (from base)
 
 ---
 Amchik <am4ik1337@gmail.com>, chk[rg]
-Sat Jan  9 03:10:39 AM UTC 2021 [date --utc]
+Fri Jan 15 09:49:06 PM UTC 2021 [date --utc]

@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "include/zfetch.h"
 #include "include/zfetch-config.h"
@@ -28,6 +29,67 @@ char* read_file(const char* filename) {
   return(string);
 }
 
+#define PBEGIN "/proc/"
+#define PEND "/comm"
+
+char* get_pname(pid_t pid) {
+  char* _spid = calloc(12, sizeof(char));
+  sprintf(_spid, "%u", pid);
+  char* path = malloc(strlen(PBEGIN PEND) + 
+      strlen(_spid));
+  sprintf(path, PBEGIN "%u" PEND, pid);
+  free(_spid);
+
+  FILE* fp = fopen(path, "r");
+  if (!fp) return("/sbin/init");
+  char* ans;
+  size_t n = 0;
+  getline(&ans, &n, fp);
+  fclose(fp);
+  free(path);
+
+  return(ans);
+}
+
+#define _GETPPIDOF_C_PBEGIN "/proc/" // <what><pid>/stat
+#define _GETPPIDOF_C_PEND "/stat"    // /proc/<pid><what>
+
+// https://gist.github.com/Amchik/64e1c40bdd531a9fb09df6a2931cfda9
+pid_t getppidof(pid_t pid) {
+  char* spid = calloc(12, sizeof(char));
+  sprintf(spid, "%u", pid);
+  char* path = malloc(strlen(_GETPPIDOF_C_PBEGIN _GETPPIDOF_C_PEND) + 
+      strlen(spid) + 1);
+  sprintf(path, _GETPPIDOF_C_PBEGIN "%s" _GETPPIDOF_C_PEND, spid);
+  free(spid);
+
+  FILE* fp = fopen(path, "r");
+  if (!fp) return(0); // process $pid doesnt exists
+  char* sppid;
+  size_t n = 0;
+  getline(&sppid, &n, fp);
+  sppid = strtok(sppid, ")"); // see proc(5)
+  sppid = strtok(0, ")");     // for more info...
+  sppid = strtok(sppid, " ");
+  sppid = strtok(0, " ");     // getting ppid
+  fclose(fp);
+
+  pid_t ppid = atoi(sppid);
+  free(path);
+  return(ppid);
+}
+
+bool strends(const char* str, const char* suffix) {
+  // audit: move functionS into file
+  size_t sn = strlen(suffix);
+  size_t strn = strlen(str);
+  if (sn > strn || strn == 0 || sn == 0) return(false);
+  for (int i = sn - 1; i >= strn - 1; i--) {
+    if (str[i] != suffix[i]) return(false);
+  }
+  return(true);
+}
+
 int main(int argc, char* argv[]) {
   if (argc > 1) {
     // todo: 3.3
@@ -40,6 +102,33 @@ int main(int argc, char* argv[]) {
         val[strlen(val) - 1] = 0;
         val++;
         printf("%s\n", val);
+        return(0);
+      } else if (strcmp("--shell", argv[i]) == 0) {
+        char* ans = get_pname(getppid());
+        puts(ans);
+        return(0);
+      } else if (strcmp("--shell-short", argv[i]) == 0) {
+        char* ans = get_pname(getppid());
+        if (strends(ans, "zfetch")) {
+          ans = get_pname( getppidof( getppid() ) );
+        }
+        char* res = malloc(strlen(ans) + 1);
+        size_t res0 = 0;
+        for (int i = strlen(ans) - 1; i >= 0; i--) {
+          if (ans[i] == '/') {
+            res0 = i + 1;
+            break;
+          } else if (ans[i] == '\n') {
+            res[i] = ' ';
+          } else {
+            res[i] = ans[i];
+          }
+        }
+        puts(res + res0);
+        return(0);
+      } else if (strcmp("--term", argv[i]) == 0) {
+        char* ans = get_pname( getppidof( getppid() ) );
+        puts(ans);
         return(0);
       } else if (strcmp("--help-base-files", argv[i]) == 0) {
         puts(" === ZFETCH ===\n"
