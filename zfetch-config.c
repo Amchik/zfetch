@@ -340,7 +340,7 @@ bool init_info(const char* _out) {
       "\"pkgs\" \"unknown\"\n"
       "\"kernel\" {uname -r}\n"
       "\"wm/de\" {echo $DESKTOP_SESSION}\n"
-      "\"term\" {ps -o comm= -p \"$(($(ps -o ppid= -p \"$(($(ps -o sid= -p \"$$\")))\")))\"}"
+      "\"term\" {zfetch --term}"
       , f_info);
   fclose(f_info);
   if (need_clean) free(out);
