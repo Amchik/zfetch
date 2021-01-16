@@ -35,7 +35,7 @@ Files: include/*.h, *.c
   4. [ ] move some functions into *utils.h, 3.1.3.1
 2. [x] [include/zfetch-config.h] parser for /etc/os-release
   NOTE: maybe use parse_config()
-3. [ ] [main.c] add arguments parsing
+3. [x] [main.c] add arguments parsing
   NOTE: without if-else
 4. [x] [zfetch-config.h] separate file gens
   1. [x] logo
@@ -97,4 +97,4 @@ NOTE: priority: -0.1 (from base)
 
 ---
 Amchik <am4ik1337@gmail.com>, chk[rg]
-Fri Jan 15 09:49:06 PM UTC 2021 [date --utc]
+Sat Jan 16 05:40:55 PM UTC 2021 [date --utc]

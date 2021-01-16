@@ -35,7 +35,7 @@ zfconfig* parse_config(const char* confdir) {
     key = strtok(ln, "=");
     char* tmp = strtok(0, "=");
     if (!key || !tmp) continue;
-    val = malloc(strlen(tmp));
+    val = calloc(strlen(tmp) + 1, sizeof(char));
     strcpy(val, tmp);
     tmp = strtok(0, "=");
     while (tmp) {

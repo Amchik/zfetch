@@ -8,6 +8,7 @@
 #include "include/zfetch.h"
 #include "include/zfetch-config.h"
 #include "include/zfetch-vars.h"
+#include "include/arguments.h"
 
 void _segv(int code) {
   printf(" \e[1;31m[e]\e[0m An unkown error occured. Please report this bug to \e[1mhttps://github.com/Amchik/zfetch/issues\e[0m [%d]\n",
@@ -90,116 +91,139 @@ bool strends(const char* str, const char* suffix) {
   return(true);
 }
 
-int main(int argc, char* argv[]) {
-  if (argc > 1) {
-    // todo: 3.3
-    for (int i = 1; i < argc; ++i) {
-      if (strcmp("--os-release", argv[i]) == 0 && ++i < argc) {
-        // parse /etc/os-release w/ info. um...
-        zfconfig* osr = parse_config("/etc/os-release"); // ...
-        char* val = zfconfig_get_key(osr, argv[i]);
-        if (!val) return(1);
-        val[strlen(val) - 1] = 0;
-        val++;
-        printf("%s\n", val);
-        return(0);
-      } else if (strcmp("--shell", argv[i]) == 0) {
-        char* ans = get_pname(getppid());
-        puts(ans);
-        return(0);
-      } else if (strcmp("--shell-short", argv[i]) == 0) {
-        char* ans = get_pname(getppid());
-        if (strends(ans, "zfetch")) {
-          ans = get_pname( getppidof( getppid() ) );
-        }
-        char* res = malloc(strlen(ans) + 1);
-        size_t res0 = 0;
-        for (int i = strlen(ans) - 1; i >= 0; i--) {
-          if (ans[i] == '/') {
-            res0 = i + 1;
-            break;
-          } else if (ans[i] == '\n') {
-            res[i] = ' ';
-          } else {
-            res[i] = ans[i];
-          }
-        }
-        puts(res + res0);
-        return(0);
-      } else if (strcmp("--term", argv[i]) == 0) {
-        char* ans = get_pname( getppidof( getppid() ) );
-        puts(ans);
-        return(0);
-      } else if (strcmp("--help-base-files", argv[i]) == 0) {
-        puts(" === ZFETCH ===\n"
-            "  \e[1m--regenerate-\e[3msomething [out]\e[0m - regenerates file(s)\n"
-            "   - \e[1mall\e[0m - All files (\e[1mout\e[0m ignores)\n"
-            "   - \e[1mzfconfig\e[0m - ~/.zfetch/zfconfig\n"
-            "   - \e[1minfo\e[0m - ~/.zfetch/info\n"
-            "   - \e[1mlogo\e[0m - ~/.zfetch/logo\n"
-            "  After this argument program regenerate file(s) and exit.\n"
-            "  Pass \e[1mout\e[0m for specify output file. Examples:\n"
-            " #\e[3mGenerate logo file and put it to logo.txt\e[0m\n"
-            " $ zfetch --regenerate-logo logo.txt\n"
-            " #\e[3mRegenerate and \e[31moverwrite\e[0;3m all files\e[0m\n"
-            " $ zfetch --regenerate-all");
-        return(0);
-      } else if (strcmp("--regenerate-all", argv[i]) == 0) {
-        puts(" \e[0;34m[i]\e[0m Regenerating all files...");
-        unsigned char res = init_base_dirs();
-        if (!res) {
-          puts(" \e[0;31m[e]\e[0m Failed to regenerate \e[1mall\e[0m files. Try to remove ~/.zfetch directory");
-          return(1);
-        } else if ((res & 0b01110) != 0b01110) {
-          puts(" \e[0;33m[w]\e[0m Failed to regenerate \e[1msome\e[0m files. Re-check permissions.");
-          printf(" \e[0;34m[i]\e[0m Result of init_base_dirs(): 0x%x. Try to backup and remove ~/.zfetch directory.\n", res);
-          return(2);
-        }
-        puts(" \e[0;34m[i]\e[0m Done. Now you can run \e[1m$ zfetch\e[0m.");
-        return(0);
-      } else if (strcmp("--regenerate-zfconfig", argv[i]) == 0) {
-        char* out = 0;
-        if (++i < argc) {
-          out = argv[i];
-        }
-        puts(" \e[0;34m[i]\e[0m Generating zfconfig...");
-        bool res = init_zfconfig(out);
-        if (!res) {
-          puts(" \e[0;31m[e]\e[0m Failed to regenerate file.");
-          return(1);
-        }
-        puts(" \e[0;34m[i]\e[0m Done.");
-        return(0);
-        //audit: move it into function
-      } else if (strcmp("--regenerate-info", argv[i]) == 0) {
-        char* out = 0;
-        if (++i < argc) {
-          out = argv[i];
-        }
-        puts(" \e[0;34m[i]\e[0m Generating info...");
-        bool res = init_info(out);
-        if (!res) {
-          puts(" \e[0;31m[e]\e[0m Failed to regenerate file.");
-          return(1);
-        }
-        puts(" \e[0;34m[i]\e[0m Done.");
-        return(0);
-      } else if (strcmp("--regenerate-logo", argv[i]) == 0) {
-        char* out = 0;
-        if (++i < argc) {
-          out = argv[i];
-        }
-        puts(" \e[0;34m[i]\e[0m Generating logo...");
-        bool res = init_logo(out);
-        if (!res) {
-          puts(" \e[0;31m[e]\e[0m Failed to regenerate file.");
-          return(1);
-        }
-        puts(" \e[0;34m[i]\e[0m Done.");
-        return(0);
-      }
+void get_os_release(int argc, char* argv[], size_t *n) {
+  (*n)++;
+  if (*n >= argc) exit(2);
+  zfconfig* osr = parse_config("/etc/os-release"); // ...
+  char* val = zfconfig_get_key(osr, argv[*n]);
+  if (!val) exit(1);
+  val[strlen(val) - 1] = 0;
+  val++;
+  printf("%s\n", val);
+  exit(0);
+}
+void get_shell(int argc, char* argv[], size_t* n) {
+  char* ans = get_pname(getppid());
+  if (strends(ans, "zfetch")) {
+    ans = get_pname( getppidof( getppid() ) );
+  }
+  printf("%s", ans);
+  exit(0);
+}
+void get_shell_short(int argc, char* argv[], size_t* n) {
+  char* ans = get_pname(getppid());
+  if (strends(ans, "zfetch")) {
+    ans = get_pname( getppidof( getppid() ) );
+  }
+  char* res = malloc(strlen(ans) + 1);
+  size_t res0 = 0;
+  for (int i = strlen(ans) - 1; i >= 0; i--) {
+    if (ans[i] == '/') {
+      res0 = i + 1;
+      break;
+    } else if (ans[i] == '\n') {
+      res[i] = ' ';
+    } else {
+      res[i] = ans[i];
     }
   }
+  puts(res + res0);
+  exit(0);
+}
+void get_term(int argc, char* argv[], size_t* n) {
+  char* ans = get_pname( getppidof( getppid() ) );
+  printf("%s", ans);
+  exit(0);
+}
+void help_base_files(int argc, char* argv[], size_t* n) {
+  puts(" === ZFETCH ===\n"
+      "  \e[1m--regenerate-\e[3msomething [out]\e[0m - regenerates file(s)\n"
+      "   - \e[1mall\e[0m - All files (\e[1mout\e[0m ignores)\n"
+      "   - \e[1mzfconfig\e[0m - ~/.zfetch/zfconfig\n"
+      "   - \e[1minfo\e[0m - ~/.zfetch/info\n"
+      "   - \e[1mlogo\e[0m - ~/.zfetch/logo\n"
+      "  After this argument program regenerate file(s) and exit.\n"
+      "  Pass \e[1mout\e[0m for specify output file. Examples:\n"
+      " #\e[3mGenerate logo file and put it to logo.txt\e[0m\n"
+      " $ zfetch --regenerate-logo logo.txt\n"
+      " #\e[3mRegenerate and \e[31moverwrite\e[0;3m all files\e[0m\n"
+      " $ zfetch --regenerate-all");
+  exit(0);
+}
+void regenerate_all(int argc, char* argv[], size_t* n) {
+  puts(" \e[0;34m[i]\e[0m Regenerating all files...");
+  unsigned char res = init_base_dirs();
+  if (!res) {
+    puts(" \e[0;31m[e]\e[0m Failed to regenerate \e[1mall\e[0m files. Try to remove ~/.zfetch directory");
+    exit(1);
+  } else if ((res & 0b01110) != 0b01110) {
+    puts(" \e[0;33m[w]\e[0m Failed to regenerate \e[1msome\e[0m files. Re-check permissions.");
+    printf(" \e[0;34m[i]\e[0m Result of init_base_dirs(): 0x%x. Try to backup and remove ~/.zfetch directory.\n", res);
+    exit(2);
+  }
+  puts(" \e[0;34m[i]\e[0m Done. Now you can run \e[1m$ zfetch\e[0m.");
+  exit(0);
+}
+void regenerate_info(int argc, char* argv[], size_t* n) {
+  char* out = 0;
+  if (++(*n) < argc) {
+    out = argv[*n];
+  }
+  puts(" \e[0;34m[i]\e[0m Generating info...");
+  bool res = init_info(out);
+  if (!res) {
+    puts(" \e[0;31m[e]\e[0m Failed to regenerate file.");
+    exit(1);
+  }
+  puts(" \e[0;34m[i]\e[0m Done.");
+  exit(0);
+}
+void regenerate_zfconfig(int argc, char* argv[], size_t* n) {
+  char* out = 0;
+  if (++(*n) < argc) {
+    out = argv[*n];
+  }
+  puts(" \e[0;34m[i]\e[0m Generating zfconfig...");
+  bool res = init_zfconfig(out);
+  if (!res) {
+    puts(" \e[0;31m[e]\e[0m Failed to regenerate file.");
+    exit(1);
+  }
+  puts(" \e[0;34m[i]\e[0m Done.");
+  exit(0);
+}
+void regenerate_logo(int argc, char* argv[], size_t* n) {
+  char* out = 0;
+  if (++(*n) < argc) {
+    out = argv[*n];
+  }
+  puts(" \e[0;34m[i]\e[0m Generating logo...");
+  bool res = init_logo(out);
+  if (!res) {
+    puts(" \e[0;31m[e]\e[0m Failed to regenerate file.");
+    exit(1);
+  }
+  puts(" \e[0;34m[i]\e[0m Done.");
+  exit(0);
+}
+
+int main(int argc, char* argv[]) {
+  struct args* args = mk_args();
+  append_argument(args, "--os-release",          get_os_release);
+  append_argument(args, "--shell",               get_shell);
+  append_argument(args, "--shell-short",         get_shell_short);
+  append_argument(args, "--term",                get_term);
+
+  append_argument(args, "--help-base-files",     help_base_files);
+  append_argument(args, "--regenerate-all",      regenerate_all);
+  append_argument(args, "--regenerate-info",     regenerate_info);
+  append_argument(args, "--regenerate-zfconfig", regenerate_zfconfig);
+  append_argument(args, "--regenerate-logo",     regenerate_logo);
+  for (size_t i = 1; i < argc; i++) {
+    bool res = execute_argument(args, argc, argv, &i);
+    if (!res) printf(" \e[0;33m[w]\e[0m Unknown argument '%s'\n", argv[i]);
+  }
+  free(args);
 
   char* userhome = get_user_home();
   char* logofile = malloc(strlen(userhome) + strlen(config_dir) + strlen(logo_file_name));
