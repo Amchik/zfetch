@@ -2,4 +2,5 @@
 compile_commands.json
 *.o
 zfetch
+.home/
 
