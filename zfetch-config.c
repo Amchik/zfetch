@@ -7,6 +7,7 @@
 
 #include "include/zfetch-config.h"
 #include "include/zfetch-vars.h"
+#include "include/utils.h"
 
 char* _get_config_location() {
   char* userdir = get_user_home();
@@ -67,22 +68,6 @@ zfconfig* parse_config(const char* confdir) {
   fclose(fp);
   return(cfg);
 }
-//char* strappend(char* original, char* new) {
-//  original = realloc(original, strlen(original) + strlen(new));
-//  strcpy(original, new);
-//  return(original);
-//}
-char* strcappend(char* original, char new) {
-  size_t size;
-  if (original) size = strlen(original) + 2;
-  else size = 2;
-  char* tmp = malloc(size);
-  tmp[0] = '\0';
-  if (!original) original = "";
-  sprintf(tmp, "%s%c", original, new);
-  free(original);
-  return(tmp);
-}
 info_file* parse_info_file(const char* _ifl) {
   info_file* fl = malloc(sizeof(info_file));
   fl->lines = 0;
@@ -131,7 +116,7 @@ info_file* parse_info_file(const char* _ifl) {
       if (escape) {
         escape = false;
         if (e == 'e') e = '\e';
-        key = strcappend(key, e);
+        key = strcapnd(key, e);
         continue;
       }
       switch(e) {
@@ -143,7 +128,7 @@ info_file* parse_info_file(const char* _ifl) {
           done = true;
           break;
         default:
-          key = strcappend(key, e);
+          key = strcapnd(key, e);
           break;
       }
       if (!in_str) break;
@@ -184,7 +169,7 @@ info_file* parse_info_file(const char* _ifl) {
       if (escape) {
         escape = false;
         if (e == 'e') e = '\e';
-        val = strcappend(val, e);
+        val = strcapnd(val, e);
         continue;
       }
       switch(e) {
@@ -199,7 +184,7 @@ info_file* parse_info_file(const char* _ifl) {
             done = true;
             break;
           }
-          val = strcappend(val, e);
+          val = strcapnd(val, e);
           break;
       }
       if (!in_str) break;

@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "include/zfetch.h"
+#include "include/utils.h"
 
 logo* mk_logo(int height, int width, bool transparent) {
   logo* i = (logo*)malloc(sizeof(logo));
@@ -110,24 +111,6 @@ void prin_logo(const logo *instance) {
   }
 }
 
-// returns display length of string
-// example:
-//  strdlen("123\e[0;33mhello") -> 7
-int strdlen(const char* string) {
-  int dlen = 0;
-  int rlen = strlen(string);
-  bool escape = false;
-  for (int i = 0; i < rlen; i++) {
-    if (string[i] == '\e') {
-      escape = true;
-    } else if (escape && string[i] == 'm') {
-      escape = false;
-    } else if (!escape) {
-      dlen++;
-    }
-  }
-  return(dlen);
-}
 void _prin_crd_l(const card* crd, const clrscm* clrs) {
   logo* lgo = crd->lgo;
   info* inf = crd->inf;

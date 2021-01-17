@@ -10,87 +10,13 @@
 #include "include/zfetch-vars.h"
 #include "include/arguments.h"
 #include "include/messages.h"
+#include "include/utils.h"
 
 void _segv(int code) {
   // hmm. looks useless
   printf(" \e[1;31m[e]\e[0m An unkown error occured. Please report this bug to \e[1mhttps://github.com/Amchik/zfetch/issues\e[0m [%d]\n",
       code);
   exit(2);
-}
-
-char* read_file(const char* filename) {
-  FILE* f = fopen(filename, "rb");
-  fseek(f, 0, SEEK_END);
-  size_t fsize = ftell(f);
-  fseek(f, 0, SEEK_SET);  //same as rewind(f);
-
-  char* string = (char*)malloc(fsize + 1);
-  fread(string, fsize, 1, f);
-  fclose(f);
-
-  string[fsize] = 0;
-  return(string);
-}
-
-#define PBEGIN "/proc/"
-#define PEND "/comm"
-
-char* get_pname(pid_t pid) {
-  char* _spid = calloc(12, sizeof(char));
-  sprintf(_spid, "%u", pid);
-  char* path = malloc(strlen(PBEGIN PEND) + 
-      strlen(_spid));
-  sprintf(path, PBEGIN "%u" PEND, pid);
-  free(_spid);
-
-  FILE* fp = fopen(path, "r");
-  if (!fp) return("/sbin/init");
-  char* ans;
-  size_t n = 0;
-  getline(&ans, &n, fp);
-  fclose(fp);
-  free(path);
-
-  return(ans);
-}
-
-#define _GETPPIDOF_C_PBEGIN "/proc/" // <what><pid>/stat
-#define _GETPPIDOF_C_PEND "/stat"    // /proc/<pid><what>
-
-// https://gist.github.com/Amchik/64e1c40bdd531a9fb09df6a2931cfda9
-pid_t getppidof(pid_t pid) {
-  char* spid = calloc(12, sizeof(char));
-  sprintf(spid, "%u", pid);
-  char* path = malloc(strlen(_GETPPIDOF_C_PBEGIN _GETPPIDOF_C_PEND) + 
-      strlen(spid) + 1);
-  sprintf(path, _GETPPIDOF_C_PBEGIN "%s" _GETPPIDOF_C_PEND, spid);
-  free(spid);
-
-  FILE* fp = fopen(path, "r");
-  if (!fp) return(0); // process $pid doesnt exists
-  char* sppid;
-  size_t n = 0;
-  getline(&sppid, &n, fp);
-  sppid = strtok(sppid, ")"); // see proc(5)
-  sppid = strtok(0, ")");     // for more info...
-  sppid = strtok(sppid, " ");
-  sppid = strtok(0, " ");     // getting ppid
-  fclose(fp);
-
-  pid_t ppid = atoi(sppid);
-  free(path);
-  return(ppid);
-}
-
-bool strends(const char* str, const char* suffix) {
-  // audit: move functionS into file
-  size_t sn = strlen(suffix);
-  size_t strn = strlen(str);
-  if (sn > strn || strn == 0 || sn == 0) return(false);
-  for (int i = sn - 1; i >= strn - 1; i--) {
-    if (str[i] != suffix[i]) return(false);
-  }
-  return(true);
 }
 
 void get_os_release(int argc, char* argv[], size_t *n) {
