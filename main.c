@@ -9,8 +9,10 @@
 #include "include/zfetch-config.h"
 #include "include/zfetch-vars.h"
 #include "include/arguments.h"
+#include "include/messages.h"
 
 void _segv(int code) {
+  // hmm. looks useless
   printf(" \e[1;31m[e]\e[0m An unkown error occured. Please report this bug to \e[1mhttps://github.com/Amchik/zfetch/issues\e[0m [%d]\n",
       code);
   exit(2);
@@ -131,7 +133,12 @@ void get_shell_short(int argc, char* argv[], size_t* n) {
   exit(0);
 }
 void get_term(int argc, char* argv[], size_t* n) {
-  char* ans = get_pname( getppidof( getppid() ) );
+  char* ans;
+  if (strends( get_pname(getppid()) , "zfetch" )) {
+    ans = get_pname( getppidof( getppidof( getppid() ) ) );
+  }
+  else
+    ans = get_pname( getppidof( getppid() ) );
   printf("%s", ans);
   exit(0);
 }
@@ -151,17 +158,17 @@ void help_base_files(int argc, char* argv[], size_t* n) {
   exit(0);
 }
 void regenerate_all(int argc, char* argv[], size_t* n) {
-  puts(" \e[0;34m[i]\e[0m Regenerating all files...");
+  echo("Regenerating all files...");
   unsigned char res = init_base_dirs();
   if (!res) {
-    puts(" \e[0;31m[e]\e[0m Failed to regenerate \e[1mall\e[0m files. Try to remove ~/.zfetch directory");
+    error("Failed to regenerate \e[1mall\e[0m files. Try to remove ~/.zfetch directory");
     exit(1);
   } else if ((res & 0b01110) != 0b01110) {
-    puts(" \e[0;33m[w]\e[0m Failed to regenerate \e[1msome\e[0m files. Re-check permissions.");
-    printf(" \e[0;34m[i]\e[0m Result of init_base_dirs(): 0x%x. Try to backup and remove ~/.zfetch directory.\n", res);
+    warn("Failed to regenerate \e[1msome\e[0m files. Re-check permissions.");
+    echo("Result of init_base_dirs(): 0x%x. Try to backup and remove ~/.zfetch directory.", res);
     exit(2);
   }
-  puts(" \e[0;34m[i]\e[0m Done. Now you can run \e[1m$ zfetch\e[0m.");
+  echo("Done. Now you can run \e[1m$ zfetch\e[0m.");
   exit(0);
 }
 void regenerate_info(int argc, char* argv[], size_t* n) {
@@ -169,13 +176,13 @@ void regenerate_info(int argc, char* argv[], size_t* n) {
   if (++(*n) < argc) {
     out = argv[*n];
   }
-  puts(" \e[0;34m[i]\e[0m Generating info...");
+  echo("Generating info...");
   bool res = init_info(out);
   if (!res) {
-    puts(" \e[0;31m[e]\e[0m Failed to regenerate file.");
+    error("Failed to regenerate file.");
     exit(1);
   }
-  puts(" \e[0;34m[i]\e[0m Done.");
+  echo("Done.");
   exit(0);
 }
 void regenerate_zfconfig(int argc, char* argv[], size_t* n) {
@@ -183,13 +190,13 @@ void regenerate_zfconfig(int argc, char* argv[], size_t* n) {
   if (++(*n) < argc) {
     out = argv[*n];
   }
-  puts(" \e[0;34m[i]\e[0m Generating zfconfig...");
+  echo("Generating zfconfig...");
   bool res = init_zfconfig(out);
   if (!res) {
-    puts(" \e[0;31m[e]\e[0m Failed to regenerate file.");
+    error("Failed to regenerate file.");
     exit(1);
   }
-  puts(" \e[0;34m[i]\e[0m Done.");
+  echo("Done.");
   exit(0);
 }
 void regenerate_logo(int argc, char* argv[], size_t* n) {
@@ -197,13 +204,13 @@ void regenerate_logo(int argc, char* argv[], size_t* n) {
   if (++(*n) < argc) {
     out = argv[*n];
   }
-  puts(" \e[0;34m[i]\e[0m Generating logo...");
+  echo("Generating logo...");
   bool res = init_logo(out);
   if (!res) {
-    puts(" \e[0;31m[e]\e[0m Failed to regenerate file.");
+    error("Failed to regenerate file.");
     exit(1);
   }
-  puts(" \e[0;34m[i]\e[0m Done.");
+  echo("Done.");
   exit(0);
 }
 
@@ -221,7 +228,7 @@ int main(int argc, char* argv[]) {
   append_argument(args, "--regenerate-logo",     regenerate_logo);
   for (size_t i = 1; i < argc; i++) {
     bool res = execute_argument(args, argc, argv, &i);
-    if (!res) printf(" \e[0;33m[w]\e[0m Unknown argument '%s'\n", argv[i]);
+    if (!res) warn("Unknown argument '%s'", argv[i]);
   }
   free(args);
 
@@ -236,15 +243,14 @@ int main(int argc, char* argv[]) {
   //signal(SIGIOT, _segv);
 
   if (argc > 1 && strcmp(argv[1], "--init-base-dirs") == 0) {
-    printf(" \e[0;34m[i]\e[0m Creating base directories...\n");
-    init_base_dirs();
-    return(0);
+    error("Use \e[1m--regenerate-all\e[0m for regenerate all files. Read \e[1m--help-base-files\e[0m for more info.");
+    return(255);
   }
 
   if (!has_base_dirs()) {
-    printf(" \e[0;33m[w]\e[0m Installation corrupted: failed to locate %s%s... files\n",
+    error("Installation corrupted: failed to locate %s%s... files",
         get_user_home(), config_dir);
-    printf(" \e[0;34m[i]\e[0m You can get help about it using \e[1m--help-base-files\e[0m.\n");
+    echo("You can get help about it using \e[1m--help-base-files\e[0m.");
     return(1);
   }
   
