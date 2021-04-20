@@ -11,7 +11,7 @@
 
 char* _get_config_location() {
   char* userdir = get_user_home();
-  char* confdir = malloc(strlen(userdir) + strlen(config_dir) + strlen(main_file_name));
+  char* confdir = malloc(strlen(userdir) + strlen(config_dir) + strlen(main_file_name) + 1);
   sprintf(confdir, "%s%s%s", userdir, config_dir, main_file_name);
   return confdir;
 
@@ -59,8 +59,8 @@ zfconfig* parse_config(const char* confdir) {
 
     cfg->keys++;
 
-    cfg->values[(cfg->keys - 1) * 2] = malloc(strlen(key));
-    cfg->values[(cfg->keys - 1) * 2 + 1] = malloc(strlen(val));
+    cfg->values[(cfg->keys - 1) * 2] = malloc(strlen(key) + 1);
+    cfg->values[(cfg->keys - 1) * 2 + 1] = malloc(strlen(val) + 1);
 
     strcpy(cfg->values[(cfg->keys - 1) * 2], key);
     strcpy(cfg->values[(cfg->keys - 1) * 2 + 1], val);
@@ -217,8 +217,8 @@ info_file* parse_info_file(const char* _ifl) {
       }
     }
     fl->content = realloc(fl->content, (++fl->lines + 1) * 2 * sizeof(char*));
-    fl->content[(fl->lines - 1) * 2] = malloc(strlen(key));
-    fl->content[(fl->lines - 1) * 2 + 1] = malloc(strlen(val));
+    fl->content[(fl->lines - 1) * 2] = malloc(strlen(key) + 1);
+    fl->content[(fl->lines - 1) * 2 + 1] = malloc(strlen(val) + 1);
     strcpy(fl->content[(fl->lines - 1) * 2], key);
     strcpy(fl->content[(fl->lines - 1) * 2 + 1], val);
     free(key);
