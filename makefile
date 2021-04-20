@@ -1,18 +1,29 @@
-src = $(wildcard *.c)
-obj = $(src:.c=.o)
+NAME = zfetch
+BIN = bin
+OBJ = obj
 
-CFLAGS += -Wall
+SOURCES = $(wildcard src/*.c)
+OBJECTS = $(patsubst src/%.c,$(OBJ)/%.o,$(SOURCES))
 
-zfetch: $(obj)
-	$(CC) -o $@ $^ $(LDFLAGS)
+FLAGS   = -Wall -Wextra -std=c99
+LFLAGS  =
 
-.PHONY: clean
-clean:
-	rm -f $(obj) zfetch
+$(OBJ)/%.o: src/%.c
+	@echo "\e[1mBuilding \e[4m$@\e[0m"
+	@mkdir -p $(@D)
+	@$(CC) $(FLAGS) $(CFLAGS) -c -o $@ $<
 
-.PHONY: check
-check: zfetch
-	mkdir -p .home/
-	HOME=$(PWD)/.home ./zfetch --regenerate-all
-	HOME=$(PWD)/.home PATH=$(PATH):$(PWD) ./zfetch
-	rm -r .home/
+$(BIN)/$(NAME): $(OBJECTS)
+	@echo "\e[1mLinking \e[4m$@\e[0m"
+	@mkdir -p $(@D)
+	@$(CC) -o $@ $^ $(LFLAGS) $(LDFLAGS)
+
+cleanobj:
+	@echo "Cleaning objects"
+	@rm -fv $(OBJECTS)
+
+clean: cleanobj
+	@echo "Cleaning executables"
+	@rm -fv $(BIN)/$(NAME)
+
+# vim: filetype=make tabstop=2 shiftwidth=2
