@@ -369,18 +369,14 @@ unsigned char init_base_dirs() {
 }
 bool has_base_dirs() {
   char* userdir = get_user_home();
-  char* confdir = malloc(strlen(userdir) + strlen(config_dir));
-  strcat(confdir, userdir);
-  strcat(confdir, config_dir);
-  char* mainfile = malloc(strlen(confdir) + strlen(main_file_name));
-  strcat(mainfile, confdir);
-  strcat(mainfile, main_file_name);
-  char* logofile = malloc(strlen(confdir) + strlen(logo_file_name));
-  strcat(logofile, confdir);
-  strcat(logofile, logo_file_name);
-  char* infofile = malloc(strlen(confdir) + strlen(info_file_name));
-  strcat(infofile, confdir);
-  strcat(infofile, info_file_name);
+  char* confdir = malloc(strlen(userdir) + strlen(config_dir) + 1);
+  sprintf(confdir, "%s%s", userdir, config_dir);
+  char* mainfile = malloc(strlen(confdir) + strlen(main_file_name) + 1);
+  sprintf(mainfile, "%s%s", confdir, main_file_name);
+  char* logofile = malloc(strlen(confdir) + strlen(logo_file_name) + 1);
+  sprintf(logofile, "%s%s", confdir, logo_file_name);
+  char* infofile = malloc(strlen(confdir) + strlen(info_file_name) + 1);
+  sprintf(infofile, "%s%s", confdir, info_file_name);
 
   bool ex1 = access(mainfile, F_OK) != -1;
   bool ex2 = access(logofile, F_OK) != -1;

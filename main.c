@@ -159,8 +159,8 @@ int main(int argc, char* argv[]) {
   free(args);
 
   char* userhome = get_user_home();
-  char* logofile = malloc(strlen(userhome) + strlen(config_dir) + strlen(logo_file_name));
-  char* confdir = malloc(strlen(userhome) + strlen(config_dir) + strlen(main_file_name));
+  char* logofile = malloc(strlen(userhome) + strlen(config_dir) + strlen(logo_file_name) + 1);
+  char* confdir = malloc(strlen(userhome) + strlen(config_dir) + strlen(main_file_name) + 1);
   sprintf(confdir, "%s%s%s", userhome, config_dir, main_file_name);
   sprintf(logofile, "%s%s%s", userhome, config_dir, logo_file_name);
 
