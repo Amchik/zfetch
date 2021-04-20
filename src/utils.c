@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
 #define _GET_PNAME_PBEGIN "/proc/"
 #define _GET_PNAME_PEND "/comm"
