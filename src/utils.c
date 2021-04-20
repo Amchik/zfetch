@@ -28,7 +28,7 @@ char* get_pname(pid_t pid) {
   char* _spid = calloc(12, sizeof(char));
   sprintf(_spid, "%u", pid);
   char* path = malloc(strlen(_GET_PNAME_PBEGIN _GET_PNAME_PEND) + 
-      strlen(_spid));
+      strlen(_spid) + 1);
   sprintf(path, _GET_PNAME_PBEGIN "%u" _GET_PNAME_PEND, pid);
   free(_spid);
 

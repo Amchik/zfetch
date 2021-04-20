@@ -14,7 +14,6 @@ char* _get_config_location() {
   char* confdir = malloc(strlen(userdir) + strlen(config_dir) + strlen(main_file_name) + 1);
   sprintf(confdir, "%s%s%s", userdir, config_dir, main_file_name);
   return confdir;
-
 }
 
 zfconfig* parse_config(const char* confdir) {
@@ -241,7 +240,18 @@ char* get_user_name() {
   return getenv("USER");
 }
 char* get_host_name() {
-  return getenv("HOSTNAME");
+  char* env = getenv("HOSTNAME");
+  if (env) return(env);
+  FILE* fp = fopen("/etc/hostname", "r");
+  fseek(fp, 0, SEEK_END);
+  size_t size = ftell(fp);
+  char* buff = malloc(size);
+  rewind(fp);
+  fread(buff, 1, size, fp);
+  if (buff[size - 1] == '\n')
+    buff[size - 1] = '\0';
+  fclose(fp);
+  return(buff);
 }
 
 char* get_user_home() {

@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
   logo* lgo = mk_logo(height, width, 0);
   lgo->content = read_file(logofile);
 
-  char* _ifl = malloc(strlen(get_user_home()) + strlen(config_dir) + strlen(info_file_name));
+  char* _ifl = malloc(strlen(get_user_home()) + strlen(config_dir) + strlen(info_file_name) + 1);
   sprintf(_ifl, "%s%s%s", get_user_home(), config_dir, info_file_name);
   info_file* _inf = parse_info_file(_ifl);
   info* inf = mk_info(_inf->lines, 0, zfconfig_get_key(cfg, "info.separator"));
