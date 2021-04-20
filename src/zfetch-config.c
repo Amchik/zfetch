@@ -199,14 +199,19 @@ info_file* parse_info_file(const char* _ifl) {
       if (!out) {
         val = "<failed to execute command>";
       } else {
-        char* vln = 0;
-        size_t vn = 0;
-        getline(&vln, &vn, out);
+#define VLN_SIZE 256
+        char *vln = calloc(VLN_SIZE, 1);
+        fread(vln, 1, VLN_SIZE, out);
         free(val);
+        vln[VLN_SIZE - 1] = '\0';
+        for (size_t i = 0; i < VLN_SIZE; i++) {
+          if (vln[i] == '\n') {
+            vln[i] = '\0';
+            break;
+          }
+        }
         val = vln;
-        size_t laste = strlen(val) - 1;
-        if (val[laste] == '\n')
-          val[laste] = '\0';
+#undef VLN_SIZE
         // Uncomment this line for...
         // free(): invalid pointer
         // [1]    9331 IOT instruction (core dumped)  ./zfetch
