@@ -26,4 +26,10 @@ clean: cleanobj
 	@echo "Cleaning executables"
 	@rm -fv $(BIN)/$(NAME)
 
+check: $(BIN)/$(NAME)
+	mkdir -p .home/
+	HOME=$(PWD)/.home $(BIN)/$(NAME) --regenerate-all
+	HOME=$(PWD)/.home $(BIN)/$(NAME)
+	rm -r .home/
+
 # vim: filetype=make tabstop=2 shiftwidth=2
