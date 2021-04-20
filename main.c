@@ -23,6 +23,10 @@ void get_os_release(int argc, char* argv[], size_t *n) {
   (*n)++;
   if (*n >= argc) exit(2);
   zfconfig* osr = parse_config("/etc/os-release"); // ...
+  if (!osr) {
+    fputs(" \e[0;31m[e]\e[0m Failed to parse /etc/os-release", stderr);
+    exit(3);
+  }
   char* val = zfconfig_get_key(osr, argv[*n]);
   if (!val) exit(1);
   val[strlen(val) - 1] = 0;

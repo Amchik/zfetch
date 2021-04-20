@@ -14,5 +14,5 @@ clean:
 check: zfetch
 	mkdir -p .home/
 	HOME=$(PWD)/.home ./zfetch --regenerate-all
-	HOME=$(PWD)/.home ./zfetch
+	HOME=$(PWD)/.home PATH=$(PATH):$(PWD) ./zfetch
 	rm -r .home/
