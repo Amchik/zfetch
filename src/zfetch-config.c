@@ -3,7 +3,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "include/zfetch-config.h"
 #include "include/zfetch-vars.h"
@@ -195,31 +197,57 @@ info_file* parse_info_file(const char* _ifl) {
       continue;
     }
     if (command) {
-      FILE* out = popen(val, "r");
-      if (!out) {
-        val = "<failed to execute command>";
-      } else {
-#define VLN_SIZE 256
-        char *vln = calloc(VLN_SIZE, 1);
-        fread(vln, 1, VLN_SIZE, out);
-        free(val);
-        vln[VLN_SIZE - 1] = '\0';
-        for (size_t i = 0; i < VLN_SIZE; i++) {
-          if (vln[i] == '\n') {
-            vln[i] = '\0';
-            break;
-          }
-        }
-        val = vln;
-#undef VLN_SIZE
-        // Uncomment this line for...
-        // free(): invalid pointer
-        // [1]    9331 IOT instruction (core dumped)  ./zfetch
-        // (???)
-        //pclose(out);
-        // just ignore popen(3)
+      int infd[2], outfd[2];
+      if (pipe(infd) == -1)
+        goto FAILAFCL;
+      if (pipe(outfd) == -1) {
+        goto FAILBEPID;
       }
+      pid_t pid = fork();
+      if (pid < 0) {
+        close(outfd[0]);
+        close(outfd[1]);
+FAILBEPID:
+        close(infd[0]);
+        close(infd[1]);
+FAILAFCL:
+        val = "<failed to execute command>"; // errno
+        goto END;
+      } else if (pid == 0) {
+        // child
+        close(outfd[0]);
+        close(infd[1]);
+        dup2(infd[1], 0);
+        dup2(outfd[1], 1);
+        dup2(open("/dev/null", O_RDONLY), 2);
+        // safety
+        for (int i = 3; i < 4096; i++)
+          close(i);
+        setsid();
+        execl("/bin/sh", "sh", "-c", val, 0);
+        _exit(1);
+      }
+      close(outfd[1]);
+      close(infd[0]);
+      // wait for end
+      int w;
+      do {
+        waitpid(pid, &w, WUNTRACED);
+      } while (!WIFEXITED(w) && !WIFSIGNALED(w));
+#define VALBUF 256
+      val = calloc(1, VALBUF);
+      read(outfd[0], val, VALBUF - 1);
+      for (int i = 0; i < VALBUF; i++) {
+        if (val[i] == '\n' || val[i] == '\0') {
+          val[i] = '\0';
+          break;
+        }
+      }
+#undef VALBUF
+      close(outfd[0]);
+      close(infd[1]);
     }
+END:
     fl->content = realloc(fl->content, (++fl->lines + 1) * 2 * sizeof(char*));
     fl->content[(fl->lines - 1) * 2] = malloc(strlen(key) + 1);
     fl->content[(fl->lines - 1) * 2 + 1] = malloc(strlen(val) + 1);
