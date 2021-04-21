@@ -29,8 +29,11 @@ void get_os_release(int argc, char* argv[], size_t *n) {
   }
   char* val = zfconfig_get_key(osr, argv[*n]);
   if (!val) exit(1);
-  val[strlen(val) - 1] = 0;
-  val++;
+  size_t vals = strlen(val);
+  if (val[vals - 1] == '"')
+    val[strlen(val) - 1] = 0;
+  if (val[0] == '"')
+    val++;
   printf("%s\n", val);
   exit(0);
 }
